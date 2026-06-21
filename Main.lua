@@ -1,3 +1,30 @@
+-- Check critical Enums that CoreUI needs
+local requiredFonts = {
+	"BuilderSansBold",
+	"BuilderSansMedium",
+	"BuilderSans",
+	"GothamBold",
+	"Gotham",
+	"GothamBlack",
+	"Sarpanch",
+	"RobotoMono",
+	"Code",
+	"SourceSans"
+}
+
+local function checkEnums()
+	local missing = {}
+	for _, fontName in ipairs(requiredFonts) do
+		if not Enum.Font[fontName] then
+			table.insert(missing, fontName)
+		end
+	end
+	if #missing > 0 then
+		return "Your executor is missing these fonts: " .. table.concat(missing, ", ") .. "\n\nCoreUI cannot be created without them.\nTry using a different executor (e.g. Synapse X, Script‑Ware, Krnl)."
+	end
+	return nil
+end
+
 local function showError(title, message)
 	local gui = Instance.new("ScreenGui")
 	gui.Name = "ScriptError"
@@ -8,8 +35,8 @@ local function showError(title, message)
 	gui.Parent = parent
 
 	local frame = Instance.new("Frame")
-	frame.Size = UDim2.new(0, 480, 0, 320)
-	frame.Position = UDim2.new(0.5, -240, 0.5, -160)
+	frame.Size = UDim2.new(0, 500, 0, 360)
+	frame.Position = UDim2.new(0.5, -250, 0.5, -180)
 	frame.BackgroundColor3 = Color3.fromRGB(18, 18, 24)
 	frame.BorderSizePixel = 0
 	frame.Parent = gui
@@ -21,7 +48,7 @@ local function showError(title, message)
 	titleLabel.BackgroundTransparency = 1
 	titleLabel.Text = title or "Script Error"
 	titleLabel.TextColor3 = Color3.fromRGB(255, 70, 70)
-	titleLabel.Font = Enum.Font.GothamBold
+	titleLabel.Font = Enum.Font.SourceSansBold
 	titleLabel.TextSize = 22
 	titleLabel.Parent = frame
 
@@ -31,7 +58,7 @@ local function showError(title, message)
 	closeBtn.BackgroundColor3 = Color3.fromRGB(180, 40, 40)
 	closeBtn.Text = "✕"
 	closeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-	closeBtn.Font = Enum.Font.GothamBold
+	closeBtn.Font = Enum.Font.SourceSansBold
 	closeBtn.TextSize = 20
 	closeBtn.Parent = frame
 	Instance.new("UICorner", closeBtn).CornerRadius = UDim.new(0, 8)
@@ -41,9 +68,9 @@ local function showError(title, message)
 	infoLabel.Size = UDim2.new(1, -20, 0, 20)
 	infoLabel.Position = UDim2.new(0, 10, 0, 46)
 	infoLabel.BackgroundTransparency = 1
-	infoLabel.Text = "Full trace (select and copy):"
+	infoLabel.Text = "Full trace (selectable - drag to copy):"
 	infoLabel.TextColor3 = Color3.fromRGB(180, 180, 180)
-	infoLabel.Font = Enum.Font.Gotham
+	infoLabel.Font = Enum.Font.SourceSans
 	infoLabel.TextSize = 12
 	infoLabel.TextXAlignment = Enum.TextXAlignment.Left
 	infoLabel.Parent = frame
@@ -69,6 +96,7 @@ local function showError(title, message)
 	msgLabel.TextWrapped = true
 	msgLabel.TextXAlignment = Enum.TextXAlignment.Left
 	msgLabel.TextYAlignment = Enum.TextYAlignment.Top
+	msgLabel.TextSelectable = true
 	msgLabel.Size = UDim2.new(1, -12, 0, 0)
 	msgLabel.Position = UDim2.new(0, 6, 0, 6)
 	msgLabel.Parent = scroll
@@ -81,6 +109,13 @@ local function onError(err)
 end
 
 local success, result = xpcall(function()
+	-- Check for missing fonts first
+	local fontIssue = checkEnums()
+	if fontIssue then
+		showError("Environment Incomplete", fontIssue)
+		return
+	end
+
 	local HttpService = game:GetService("HttpService")
 	local UIS = game:GetService("UserInputService")
 	local RS = game:GetService("RunService")
@@ -104,11 +139,11 @@ local success, result = xpcall(function()
 
 	local function fetchModule(name)
 		local url = BASE_URL .. name .. ".lua"
-		local ok, result = pcall(function() return game:HttpGet(url) end)
+		local ok, res = pcall(function() return game:HttpGet(url) end)
 		if not ok then
-			error("Download failed for " .. name .. ": " .. tostring(result))
+			error("Download failed for " .. name .. ": " .. tostring(res))
 		end
-		return result
+		return res
 	end
 
 	local function safeLoadModule(name)
