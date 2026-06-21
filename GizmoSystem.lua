@@ -2,6 +2,7 @@ local module = {}
 local Workspace = game:GetService("Workspace")
 local UIS = game:GetService("UserInputService")
 local RS = game:GetService("RunService")
+local Players = game:GetService("Players")
 
 local GizmoRoot = nil
 local HandlePart = nil
@@ -19,6 +20,12 @@ module.OnDragBegan = nil
 module.OnDragUpdate = nil
 module.OnDragEnded = nil
 
+local LocalPlayer = Players.LocalPlayer
+local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
+local GizmoContainer = PlayerGui:FindFirstChild("GizmoInteractionContainer") or Instance.new("ScreenGui")
+GizmoContainer.Name = "GizmoInteractionContainer"
+GizmoContainer.Parent = PlayerGui
+
 local function createArrow(axis, color)
 	local cylinder = Instance.new("CylinderHandleAdornment")
 	cylinder.AlwaysOnTop = true
@@ -29,10 +36,12 @@ local function createArrow(axis, color)
 	cylinder.CFrame = axis == "X" and CFrame.new(2,0,0) * CFrame.Angles(0,0,math.rad(90))
 		or axis == "Y" and CFrame.new(0,2,0)
 		or axis == "Z" and CFrame.new(0,0,2) * CFrame.Angles(math.rad(90),0,0)
-	cylinder.Parent = GizmoRoot
-	local click = Instance.new("ClickDetector")
-	click.Parent = cylinder
-	click.MouseClick:Connect(function()
+	cylinder.Parent = GizmoContainer
+	cylinder.MouseButton1Down:Connect(function()
+		ActiveGizmo = cylinder
+		DragAxis = axis
+		DragMode = "Move"
+		DragStartPlane = Vector3.new(UIS:GetMouseLocation().X, UIS:GetMouseLocation().Y, 0)
 		if module.OnDragBegan then
 			module.OnDragBegan(axis, "Move")
 		end
@@ -52,10 +61,12 @@ local function createRing(axis, color)
 	elseif axis == "Y" then rot = CFrame.Angles(0, 0, 0)
 	elseif axis == "Z" then rot = CFrame.Angles(math.rad(90), 0, 0) end
 	ring.CFrame = rot
-	ring.Parent = GizmoRoot
-	local click = Instance.new("ClickDetector")
-	click.Parent = ring
-	click.MouseClick:Connect(function()
+	ring.Parent = GizmoContainer
+	ring.MouseButton1Down:Connect(function()
+		ActiveGizmo = ring
+		DragAxis = axis
+		DragMode = "Rotate"
+		DragStartPlane = Vector3.new(UIS:GetMouseLocation().X, UIS:GetMouseLocation().Y, 0)
 		if module.OnDragBegan then
 			module.OnDragBegan(axis, "Rotate")
 		end
@@ -75,10 +86,12 @@ local function createScaleCube(axis, color)
 	elseif axis == "Y" then pos = Vector3.new(0, 2, 0)
 	elseif axis == "Z" then pos = Vector3.new(0, 0, 2) end
 	cube.CFrame = CFrame.new(pos)
-	cube.Parent = GizmoRoot
-	local click = Instance.new("ClickDetector")
-	click.Parent = cube
-	click.MouseClick:Connect(function()
+	cube.Parent = GizmoContainer
+	cube.MouseButton1Down:Connect(function()
+		ActiveGizmo = cube
+		DragAxis = axis
+		DragMode = "Scale"
+		DragStartPlane = Vector3.new(UIS:GetMouseLocation().X, UIS:GetMouseLocation().Y, 0)
 		if module.OnDragBegan then
 			module.OnDragBegan(axis, "Scale")
 		end
@@ -147,36 +160,12 @@ function module.Hide()
 		HandlePart:Destroy()
 		HandlePart = nil
 	end
+	for _, v in pairs(MoveArrows) do v:Destroy() end
+	for _, v in pairs(RotateRings) do v:Destroy() end
+	for _, v in pairs(ScaleCubes) do v:Destroy() end
 	MoveArrows = {}
 	RotateRings = {}
 	ScaleCubes = {}
-end
-
-local function onInputBegan(input, gameProcessed)
-	if gameProcessed then return end
-	if input.UserInputType == Enum.UserInputType.MouseButton1 then
-		local camera = Workspace.CurrentCamera
-		local ray = camera:ViewportPointToRay(UIS:GetMouseLocation().X, UIS:GetMouseLocation().Y)
-		local params = RaycastParams.new()
-		params.FilterType = Enum.RaycastFilterType.Whitelist
-		params.FilterDescendantsInstances = {HandlePart}
-		local result = Workspace:Raycast(ray.Origin, ray.Direction * 1000, params)
-		if result then
-			ActiveGizmo = result.Instance
-			DragMode = nil
-			DragAxis = nil
-			if ActiveGizmo.Name == "MoveX" then DragAxis = "X"; DragMode = "Move"
-			elseif ActiveGizmo.Name == "MoveY" then DragAxis = "Y"; DragMode = "Move"
-			elseif ActiveGizmo.Name == "MoveZ" then DragAxis = "Z"; DragMode = "Move"
-			end
-			if DragMode then
-				if module.OnDragBegan then
-					module.OnDragBegan(DragAxis, DragMode)
-				end
-				DragStartPlane = input.Position
-			end
-		end
-	end
 end
 
 local function onInputChanged(input, gameProcessed)
@@ -211,7 +200,6 @@ local function onInputEnded(input)
 	end
 end
 
-UIS.InputBegan:Connect(onInputBegan)
 UIS.InputChanged:Connect(onInputChanged)
 UIS.InputEnded:Connect(onInputEnded)
 
