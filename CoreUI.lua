@@ -12,7 +12,7 @@ local function safeFont(name)
 	if success and font then
 		return font
 	end
-	return Enum.Font.SourceSans
+	return Enum.Font.Legacy
 end
 
 local PRESETS = {
@@ -76,6 +76,9 @@ end
 
 local function create(className, props, parent)
 	local inst = Instance.new(className)
+	if not inst then
+		error("Failed to create instance of class " .. className)
+	end
 	for k, v in pairs(props) do
 		if k ~= "Parent" then
 			pcall(function() inst[k] = v end)
@@ -114,6 +117,7 @@ local function buildBuyPrompt()
 	TopTitle = create("TextLabel", {Size = UDim2.new(0.5,0,0.1,0), Position = UDim2.new(0.05,0,0.05,0), BackgroundTransparency = 1, Text = "Buy Item", TextColor3 = Color3.new(1,1,1), TextScaled = true, TextXAlignment = Enum.TextXAlignment.Left, Font = safeFont("BuilderSansBold")}, Background)
 	RobuxAmount = create("TextLabel", {Name = "RobuxAmount", Size = UDim2.new(0.295,0,0.08,0), Position = UDim2.new(0.55,0,0.062,0), BackgroundTransparency = 1, TextColor3 = Color3.new(1,1,1), TextScaled = true, RichText = true, Font = safeFont("BuilderSansMedium")}, Background)
 	CloseButton = create("TextButton", {Size = UDim2.new(0.12,0,0.12,0), Position = UDim2.new(0.85,0,0.045,0), BackgroundTransparency = 1, Text = "X", TextColor3 = Color3.new(1,1,1), TextScaled = true, Font = safeFont("Sarpanch")}, Background)
+	if not CloseButton then error("CloseButton is nil") end
 	ProductFrame = create("Frame", {Size = UDim2.new(0.9,0,0.3,0), Position = UDim2.new(0.05,0,0.2,0), BackgroundTransparency = 1}, Background)
 	ProductImage = create("ImageLabel", {Size = UDim2.new(0.18,0,0.84,0), Position = UDim2.new(0,0,0.08,0), BackgroundTransparency = 1, ScaleType = Enum.ScaleType.Fit}, ProductFrame)
 	create("UICorner", {CornerRadius = UDim.new(1,0)}, ProductImage)
@@ -134,14 +138,13 @@ local function buildBuyPrompt()
 	create("UIStroke", {Color = Color3.new(0.196,0.212,0.239), Thickness = 2, ApplyStrokeMode = Enum.ApplyStrokeMode.Border}, CompleteBackground)
 	C_TopTitle = create("TextLabel", {Size = UDim2.new(0.5,0,0.1,0), Position = UDim2.new(0.05,0,0.05,0), BackgroundTransparency = 1, Text = "Purchase completed", TextColor3 = Color3.new(1,1,1), TextScaled = true, TextXAlignment = Enum.TextXAlignment.Left, Font = safeFont("BuilderSansBold")}, CompleteBackground)
 	C_CloseButton = create("TextButton", {Size = UDim2.new(0.12,0,0.12,0), Position = UDim2.new(0.85,0,0.045,0), BackgroundTransparency = 1, Text = "X", TextColor3 = Color3.new(1,1,1), TextScaled = true, Font = safeFont("Sarpanch")}, CompleteBackground)
+	if not C_CloseButton then error("C_CloseButton is nil") end
 	C_Image = create("ImageLabel", {Size = UDim2.new(0.35,0,0.35,0), Position = UDim2.new(0.325,0,0.25,0), BackgroundTransparency = 1, Image = "rbxassetid://92231445168972", ScaleType = Enum.ScaleType.Fit}, CompleteBackground)
 	C_ProductText = create("TextLabel", {Size = UDim2.new(0.9,0,0.12,0), Position = UDim2.new(0.05,0,0.65,0), BackgroundTransparency = 1, Text = "You have successfully bought [ItemName]", TextColor3 = Color3.new(1,1,1), TextScaled = true, TextXAlignment = Enum.TextXAlignment.Center, Font = safeFont("BuilderSans")}, CompleteBackground)
 	C_OKButton = create("TextButton", {Size = UDim2.new(0.9,0,0.125,0), Position = UDim2.new(0.05,0,0.8,0), BackgroundColor3 = Color3.new(0.196,0.373,0.984), Text = "OK", TextColor3 = Color3.new(1,1,1), TextScaled = true, Font = safeFont("RobotoMono")}, CompleteBackground)
 	create("UICorner", {CornerRadius = UDim.new(0.15,0)}, C_OKButton)
-
-	if not CloseButton or not C_CloseButton or not C_OKButton or not BuyButton then
-		error("Failed to build one or more critical buttons in RobuxBuyPrompt")
-	end
+	if not C_OKButton then error("C_OKButton is nil") end
+	if not BuyButton then error("BuyButton is nil") end
 end
 
 local function updateRobux()
