@@ -1,37 +1,12 @@
--- Check critical Enums that CoreUI needs
-local requiredFonts = {
-	"BuilderSansBold",
-	"BuilderSansMedium",
-	"BuilderSans",
-	"GothamBold",
-	"Gotham",
-	"GothamBlack",
-	"Sarpanch",
-	"RobotoMono",
-	"Code",
-	"SourceSans"
-}
-
-local function checkEnums()
-	local missing = {}
-	for _, fontName in ipairs(requiredFonts) do
-		if not Enum.Font[fontName] then
-			table.insert(missing, fontName)
-		end
-	end
-	if #missing > 0 then
-		return "Your executor is missing these fonts: " .. table.concat(missing, ", ") .. "\n\nCoreUI cannot be created without them.\nTry using a different executor (e.g. Synapse X, Script‑Ware, Krnl)."
-	end
-	return nil
-end
-
 local function showError(title, message)
 	local gui = Instance.new("ScreenGui")
 	gui.Name = "ScriptError"
 	gui.ResetOnSpawn = false
 	local parent
 	pcall(function() parent = game:GetService("CoreGui") end)
-	if not parent then parent = game.Players.LocalPlayer:WaitForChild("PlayerGui") end
+	if not parent then
+		pcall(function() parent = game.Players.LocalPlayer:WaitForChild("PlayerGui") end)
+	end
 	gui.Parent = parent
 
 	local frame = Instance.new("Frame")
@@ -48,7 +23,7 @@ local function showError(title, message)
 	titleLabel.BackgroundTransparency = 1
 	titleLabel.Text = title or "Script Error"
 	titleLabel.TextColor3 = Color3.fromRGB(255, 70, 70)
-	titleLabel.Font = Enum.Font.SourceSansBold
+	titleLabel.Font = Enum.Font.Legacy
 	titleLabel.TextSize = 22
 	titleLabel.Parent = frame
 
@@ -58,7 +33,7 @@ local function showError(title, message)
 	closeBtn.BackgroundColor3 = Color3.fromRGB(180, 40, 40)
 	closeBtn.Text = "✕"
 	closeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-	closeBtn.Font = Enum.Font.SourceSansBold
+	closeBtn.Font = Enum.Font.Legacy
 	closeBtn.TextSize = 20
 	closeBtn.Parent = frame
 	Instance.new("UICorner", closeBtn).CornerRadius = UDim.new(0, 8)
@@ -68,9 +43,9 @@ local function showError(title, message)
 	infoLabel.Size = UDim2.new(1, -20, 0, 20)
 	infoLabel.Position = UDim2.new(0, 10, 0, 46)
 	infoLabel.BackgroundTransparency = 1
-	infoLabel.Text = "Full trace (selectable - drag to copy):"
+	infoLabel.Text = "Error details (scroll, select and copy):"
 	infoLabel.TextColor3 = Color3.fromRGB(180, 180, 180)
-	infoLabel.Font = Enum.Font.SourceSans
+	infoLabel.Font = Enum.Font.Legacy
 	infoLabel.TextSize = 12
 	infoLabel.TextXAlignment = Enum.TextXAlignment.Left
 	infoLabel.Parent = frame
@@ -89,10 +64,10 @@ local function showError(title, message)
 	local msgLabel = Instance.new("TextLabel")
 	msgLabel.Name = "ErrorMessage"
 	msgLabel.BackgroundTransparency = 1
-	msgLabel.Text = message or "Unknown error"
+	msgLabel.Text = message or "No error message available."
 	msgLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-	msgLabel.Font = Enum.Font.Code
-	msgLabel.TextSize = 13
+	msgLabel.Font = Enum.Font.Legacy
+	msgLabel.TextSize = 14
 	msgLabel.TextWrapped = true
 	msgLabel.TextXAlignment = Enum.TextXAlignment.Left
 	msgLabel.TextYAlignment = Enum.TextYAlignment.Top
@@ -109,13 +84,6 @@ local function onError(err)
 end
 
 local success, result = xpcall(function()
-	-- Check for missing fonts first
-	local fontIssue = checkEnums()
-	if fontIssue then
-		showError("Environment Incomplete", fontIssue)
-		return
-	end
-
 	local HttpService = game:GetService("HttpService")
 	local UIS = game:GetService("UserInputService")
 	local RS = game:GetService("RunService")
