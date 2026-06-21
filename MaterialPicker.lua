@@ -40,7 +40,23 @@ function module.Render(container, selectedPart)
 	local matLayout = create("UIListLayout", {SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0,4)}, matScroll)
 	local varScroll = create("ScrollingFrame", {Size = UDim2.new(1,-10,0,90), Position = UDim2.new(0,5,0,160), BackgroundTransparency = 1, BorderSizePixel = 0, ScrollBarThickness = 4, CanvasSize = UDim2.new(0,0,0,0)}, frame)
 	local varLayout = create("UIListLayout", {SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0,4)}, varScroll)
-	local function populateMaterials(filter)
+	local populateVariants
+	local populateMaterials
+	populateVariants = function(mat)
+		for _, child in ipairs(varScroll:GetChildren()) do
+			if child:IsA("TextButton") then child:Destroy() end
+		end
+		local variants = VariantsByMaterial[mat] or {""}
+		for _, var in ipairs(variants) do
+			local btn = create("TextButton", {Size = UDim2.new(1,-4,0,22), BackgroundColor3 = Color3.fromRGB(45,45,52), Text = var == "" and "Default" or var, TextColor3 = Color3.fromRGB(255,255,255), Font = Enum.Font.Gotham, TextSize = 11, TextXAlignment = Enum.TextXAlignment.Left}, varScroll)
+			create("UICorner", {CornerRadius = UDim.new(0,4)}, btn)
+			btn.MouseButton1Click:Connect(function()
+				pcall(function() selectedPart.MaterialVariant = var end)
+			end)
+		end
+		varScroll.CanvasSize = UDim2.new(0,0,0, varLayout.AbsoluteContentSize.Y + 6)
+	end
+	populateMaterials = function(filter)
 		for _, child in ipairs(matScroll:GetChildren()) do
 			if child:IsA("TextButton") then child:Destroy() end
 		end
@@ -55,20 +71,6 @@ function module.Render(container, selectedPart)
 			end
 		end
 		matScroll.CanvasSize = UDim2.new(0,0,0, matLayout.AbsoluteContentSize.Y + 6)
-	end
-	local function populateVariants(mat)
-		for _, child in ipairs(varScroll:GetChildren()) do
-			if child:IsA("TextButton") then child:Destroy() end
-		end
-		local variants = VariantsByMaterial[mat] or {""}
-		for _, var in ipairs(variants) do
-			local btn = create("TextButton", {Size = UDim2.new(1,-4,0,22), BackgroundColor3 = Color3.fromRGB(45,45,52), Text = var == "" and "Default" or var, TextColor3 = Color3.fromRGB(255,255,255), Font = Enum.Font.Gotham, TextSize = 11, TextXAlignment = Enum.TextXAlignment.Left}, varScroll)
-			create("UICorner", {CornerRadius = UDim.new(0,4)}, btn)
-			btn.MouseButton1Click:Connect(function()
-				pcall(function() selectedPart.MaterialVariant = var end)
-			end)
-		end
-		varScroll.CanvasSize = UDim2.new(0,0,0, varLayout.AbsoluteContentSize.Y + 6)
 	end
 	search:GetPropertyChangedSignal("Text"):Connect(function()
 		populateMaterials(search.Text:lower())
