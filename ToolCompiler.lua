@@ -11,8 +11,9 @@ function module.Compile(buildRoot, toolName)
 	handle.CanCollide = true
 	handle.Size = Vector3.new(1, 1, 1)
 	handle.Parent = tool
+	local buildSession = buildRoot:FindFirstChild("__LocalBuildSession")
 	for _, obj in ipairs(buildRoot:GetChildren()) do
-		if obj ~= buildRoot:FindFirstChild("__LocalBuildSession") then
+		if obj ~= buildSession then
 			obj.Parent = tool
 			if obj:IsA("BasePart") then
 				obj.Anchored = false
