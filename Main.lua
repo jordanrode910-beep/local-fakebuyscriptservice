@@ -104,11 +104,11 @@ local success, result = xpcall(function()
 
 	local function fetchModule(name)
 		local url = BASE_URL .. name .. ".lua"
-		local source, httpErr = pcall(function() return game:HttpGet(url) end)
-		if not source then
-			error("Download failed for " .. name .. ": " .. tostring(httpErr))
+		local ok, result = pcall(function() return game:HttpGet(url) end)
+		if not ok then
+			error("Download failed for " .. name .. ": " .. tostring(result))
 		end
-		return source
+		return result
 	end
 
 	local function safeLoadModule(name)
