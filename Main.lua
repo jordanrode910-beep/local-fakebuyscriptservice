@@ -8,61 +8,79 @@ local function showError(title, message)
 	gui.Parent = parent
 
 	local frame = Instance.new("Frame")
-	frame.Size = UDim2.new(0, 420, 0, 240)
-	frame.Position = UDim2.new(0.5, -210, 0.5, -120)
-	frame.BackgroundColor3 = Color3.fromRGB(22, 22, 28)
+	frame.Size = UDim2.new(0, 480, 0, 320)
+	frame.Position = UDim2.new(0.5, -240, 0.5, -160)
+	frame.BackgroundColor3 = Color3.fromRGB(18, 18, 24)
 	frame.BorderSizePixel = 0
 	frame.Parent = gui
 	Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 14)
 
 	local titleLabel = Instance.new("TextLabel")
-	titleLabel.Size = UDim2.new(1, -20, 0, 32)
+	titleLabel.Size = UDim2.new(1, -20, 0, 34)
 	titleLabel.Position = UDim2.new(0, 10, 0, 10)
 	titleLabel.BackgroundTransparency = 1
-	titleLabel.Text = title or "Error"
-	titleLabel.TextColor3 = Color3.fromRGB(255, 90, 90)
+	titleLabel.Text = title or "Script Error"
+	titleLabel.TextColor3 = Color3.fromRGB(255, 70, 70)
 	titleLabel.Font = Enum.Font.GothamBold
-	titleLabel.TextSize = 20
+	titleLabel.TextSize = 22
 	titleLabel.Parent = frame
 
 	local closeBtn = Instance.new("TextButton")
-	closeBtn.Size = UDim2.new(0, 34, 0, 34)
-	closeBtn.Position = UDim2.new(1, -44, 0, 6)
-	closeBtn.BackgroundColor3 = Color3.fromRGB(190, 40, 40)
+	closeBtn.Size = UDim2.new(0, 36, 0, 36)
+	closeBtn.Position = UDim2.new(1, -46, 0, 6)
+	closeBtn.BackgroundColor3 = Color3.fromRGB(180, 40, 40)
 	closeBtn.Text = "✕"
 	closeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 	closeBtn.Font = Enum.Font.GothamBold
-	closeBtn.TextSize = 18
+	closeBtn.TextSize = 20
 	closeBtn.Parent = frame
 	Instance.new("UICorner", closeBtn).CornerRadius = UDim.new(0, 8)
 	closeBtn.MouseButton1Click:Connect(function() gui:Destroy() end)
 
+	local infoLabel = Instance.new("TextLabel")
+	infoLabel.Size = UDim2.new(1, -20, 0, 20)
+	infoLabel.Position = UDim2.new(0, 10, 0, 46)
+	infoLabel.BackgroundTransparency = 1
+	infoLabel.Text = "Full trace (select and copy):"
+	infoLabel.TextColor3 = Color3.fromRGB(180, 180, 180)
+	infoLabel.Font = Enum.Font.Gotham
+	infoLabel.TextSize = 12
+	infoLabel.TextXAlignment = Enum.TextXAlignment.Left
+	infoLabel.Parent = frame
+
 	local scroll = Instance.new("ScrollingFrame")
-	scroll.Size = UDim2.new(1, -24, 1, -54)
-	scroll.Position = UDim2.new(0, 12, 0, 44)
-	scroll.BackgroundTransparency = 1
+	scroll.Size = UDim2.new(1, -20, 1, -76)
+	scroll.Position = UDim2.new(0, 10, 0, 66)
+	scroll.BackgroundColor3 = Color3.fromRGB(30, 30, 38)
 	scroll.BorderSizePixel = 0
-	scroll.CanvasSize = UDim2.new(0, 0, 0, 200)
-	scroll.ScrollBarThickness = 4
-	scroll.ScrollBarImageColor3 = Color3.fromRGB(100, 100, 120)
+	scroll.CanvasSize = UDim2.new(0, 0, 0, 400)
+	scroll.ScrollBarThickness = 5
+	scroll.ScrollBarImageColor3 = Color3.fromRGB(120, 120, 140)
 	scroll.Parent = frame
+	Instance.new("UICorner", scroll).CornerRadius = UDim.new(0, 8)
 
 	local msgLabel = Instance.new("TextLabel")
-	msgLabel.Size = UDim2.new(1, -8, 0, 0)
+	msgLabel.Name = "ErrorMessage"
 	msgLabel.BackgroundTransparency = 1
 	msgLabel.Text = message or "Unknown error"
-	msgLabel.TextColor3 = Color3.fromRGB(240, 240, 240)
-	msgLabel.Font = Enum.Font.Gotham
-	msgLabel.TextSize = 14
+	msgLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+	msgLabel.Font = Enum.Font.Code
+	msgLabel.TextSize = 13
 	msgLabel.TextWrapped = true
 	msgLabel.TextXAlignment = Enum.TextXAlignment.Left
 	msgLabel.TextYAlignment = Enum.TextYAlignment.Top
+	msgLabel.Size = UDim2.new(1, -12, 0, 0)
+	msgLabel.Position = UDim2.new(0, 6, 0, 6)
 	msgLabel.Parent = scroll
-	msgLabel.Size = UDim2.new(1, -8, 0, msgLabel.TextBounds.Y + 20)
+	msgLabel.Size = UDim2.new(1, -12, 0, msgLabel.TextBounds.Y + 20)
 	scroll.CanvasSize = UDim2.new(0, 0, 0, msgLabel.TextBounds.Y + 24)
 end
 
-local success, result = pcall(function()
+local function onError(err)
+	return debug.traceback(tostring(err), 2)
+end
+
+local success, result = xpcall(function()
 	local HttpService = game:GetService("HttpService")
 	local UIS = game:GetService("UserInputService")
 	local RS = game:GetService("RunService")
@@ -138,8 +156,8 @@ local success, result = pcall(function()
 			if UI_PARENT:FindFirstChild("BuildModeGui") then UI_PARENT.BuildModeGui:Destroy() end
 		end)
 	end)
-end)
+end, onError)
 
 if not success then
-	showError("Script Failed", tostring(result))
+	showError("Script Execution Error", tostring(result))
 end
