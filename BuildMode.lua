@@ -33,6 +33,8 @@ local BuildMode = {
 	}
 }
 
+local refreshInspector
+
 local function create(className, props, parent)
 	local inst = Instance.new(className)
 	for k, v in pairs(props) do
@@ -480,6 +482,9 @@ local function refreshExplorer()
 	local list = create("ScrollingFrame", {Name = "ExplorerRow", Size = UDim2.new(1,0,0,150), BackgroundColor3 = Color3.fromRGB(32,32,38), BorderSizePixel = 0, ScrollBarThickness = 4, CanvasSize = UDim2.new(0,0,0,0), LayoutOrder = 2}, InspectorScroll)
 	create("UICorner", {CornerRadius = UDim.new(0,6)}, list)
 	local lay = create("UIListLayout", {SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0,4)}, list)
+	lay:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+		list.CanvasSize = UDim2.new(0, 0, 0, lay.AbsoluteContentSize.Y + 8)
+	end)
 	local function addRow(text, cb)
 		local btn = create("TextButton", {Size = UDim2.new(1,-8,0,24), Position = UDim2.new(0,4,0,0), BackgroundColor3 = Color3.fromRGB(45,45,52), Text = text, TextColor3 = Color3.fromRGB(255,255,255), Font = Enum.Font.Gotham, TextSize = 11, TextXAlignment = Enum.TextXAlignment.Left}, list)
 		create("UICorner", {CornerRadius = UDim.new(0,5)}, btn)
@@ -493,10 +498,10 @@ local function refreshExplorer()
 			end)
 		end
 	end
-	list.CanvasSize = UDim2.new(0,0,0, lay.AbsoluteContentSize.Y + 8)
+	list.CanvasSize = UDim2.new(0, 0, 0, lay.AbsoluteContentSize.Y + 8)
 end
 
-function refreshInspector()
+refreshInspector = function()
 	for _, c in ipairs(InspectorScroll:GetChildren()) do
 		if c:IsA("GuiObject") and c.Name ~= "MaterialPicker" and c.Name ~= "ExplorerRow" then
 			c:Destroy()
@@ -713,7 +718,7 @@ function refreshInspector()
 		end
 	end)
 	MaterialPicker.Render(InspectorScroll, root)
-	InspectorScroll.CanvasSize = UDim2.new(0,0,0, InspectorLayout.AbsoluteContentSize.Y + 8)
+	InspectorScroll.CanvasSize = UDim2.new(0, 0, 0, InspectorLayout.AbsoluteContentSize.Y + 8)
 end
 
 local function getRaycastParams()
@@ -942,10 +947,16 @@ local function buildUI()
 	create("UICorner", {CornerRadius = UDim.new(0,6)}, BrowserAddPartBtn)
 	BrowserScroll = create("ScrollingFrame", {Size = UDim2.new(1,-20,1,-118), Position = UDim2.new(0,10,0,110), BackgroundTransparency = 1, BorderSizePixel = 0, ScrollBarThickness = 4, CanvasSize = UDim2.new(0,0,0,0)}, BuildLeftPanel)
 	BrowserLayout = create("UIListLayout", {SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0,6)}, BrowserScroll)
+	BrowserLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+		BrowserScroll.CanvasSize = UDim2.new(0, 0, 0, BrowserLayout.AbsoluteContentSize.Y + 8)
+	end)
 	create("UIPadding", {PaddingTop = UDim.new(0,2), PaddingBottom = UDim.new(0,8)}, BrowserScroll)
 	InspectorTitle = create("TextLabel", {Size = UDim2.new(1,-20,0,24), Position = UDim2.new(0,10,0,8), BackgroundTransparency = 1, Text = "Properties", TextColor3 = Color3.fromRGB(255,255,255), Font = Enum.Font.GothamBold, TextSize = 13, TextXAlignment = Enum.TextXAlignment.Left}, BuildRightPanel)
 	InspectorScroll = create("ScrollingFrame", {Size = UDim2.new(1,-20,1,-50), Position = UDim2.new(0,10,0,38), BackgroundTransparency = 1, BorderSizePixel = 0, ScrollBarThickness = 4, CanvasSize = UDim2.new(0,0,0,0)}, BuildRightPanel)
 	InspectorLayout = create("UIListLayout", {SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0,6)}, InspectorScroll)
+	InspectorLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+		InspectorScroll.CanvasSize = UDim2.new(0, 0, 0, InspectorLayout.AbsoluteContentSize.Y + 8)
+	end)
 	create("UIPadding", {PaddingTop = UDim.new(0,2), PaddingBottom = UDim.new(0,8)}, InspectorScroll)
 	BottomInfo = create("TextLabel", {Size = UDim2.new(1,-20,1,0), Position = UDim2.new(0,10,0,0), BackgroundTransparency = 1, Text = "LMB select, drag to move. 1 Move, 2 Rotate, 3 Scale, Ctrl multi-select, Del delete, Ctrl+D duplicate, Ctrl+G group, Ctrl+Shift+G ungroup, Ctrl+Z undo, Ctrl+Y redo", TextColor3 = Color3.fromRGB(220,220,220), Font = Enum.Font.Gotham, TextSize = 12, TextXAlignment = Enum.TextXAlignment.Left}, BuildBottomBar)
 end
@@ -999,7 +1010,7 @@ local function refreshBrowser()
 		snapshotHistory()
 		refreshInspector()
 	end))
-	BrowserScroll.CanvasSize = UDim2.new(0,0,0, BrowserLayout.AbsoluteContentSize.Y + 8)
+	BrowserScroll.CanvasSize = UDim2.new(0, 0, 0, BrowserLayout.AbsoluteContentSize.Y + 8)
 end
 
 local function beginDrag(action, mouseHit)
