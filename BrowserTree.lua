@@ -28,12 +28,15 @@ function module.Render(container, buildRoot, onSpawn)
 		end
 	end
 	local layout = create("UIListLayout", {SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0,4)}, container)
+	layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+		container.CanvasSize = UDim2.new(0, 0, 0, layout.AbsoluteContentSize.Y + 8)
+	end)
 	for _, obj in ipairs(buildRoot:GetChildren()) do
 		if obj:IsA("BasePart") or obj:IsA("Model") or obj:IsA("Folder") then
 			addNode(container, obj, 0)
 		end
 	end
-	container.CanvasSize = UDim2.new(0,0,0, layout.AbsoluteContentSize.Y + 8)
+	container.CanvasSize = UDim2.new(0, 0, 0, layout.AbsoluteContentSize.Y + 8)
 end
 
 return module
